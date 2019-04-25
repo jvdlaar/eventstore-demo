@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+use Infrastructure\Console\ConsoleHandlerFactory;
+
+set_time_limit(0);
+
+require __DIR__.'/../vendor/autoload.php';
+require __DIR__.'/../src/init.php';
+
+$consoleHandlerFactory = $container->get(ConsoleHandlerFactory::class);
+
+if ($_SERVER['argc'] < 2) {
+    echo "Missing command. These commands are available:\n\n";
+    echo implode("\n", $consoleHandlerFactory->getCommands()) . "\n";
+    exit;
+}
+
+$consoleCommand = $_SERVER['argv'][1];
+$handler = $consoleHandlerFactory->createHandler($consoleCommand);
+$handler(...array_slice($_SERVER['argv'], 2));

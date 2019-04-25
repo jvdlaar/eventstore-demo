@@ -1,0 +1,55 @@
+version: '3.7'
+
+services:
+  event-store:
+    container_name: demo-event-store
+    image: eventstore/eventstore:release-4.1.1-hotfix1
+    environment:
+      - EVENTSTORE_MEM_DB=1
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+    ports:
+      - 2114:2113
+    networks:
+      - demo
+
+  postgres:
+    container_name: demo-postgres
+    image: postgres:11-alpine
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASS:-1234}
+      - POSTGRES_DB=${POSTGRES_DB:-pizzas}
+    networks:
+      - demo
+    ports:
+      - 5435:5432
+
+  php-cli:
+    build:
+      context: docker/cli
+    env_file: .env
+    volumes:
+      - ./:/app:cached
+    networks:
+      - demo
+
+  composer:
+    build:
+      context: docker/cli
+    environment:
+      COMPOSER_AUTH: '{"github-oauth":{"github.com":"${GITHUB_TOKEN}"}}'
+    networks:
+      - demo
+    volumes:
+      - ./:/app
+      - ~/.composer/cache:/composer/cache
+
+volumes:
+  event-store:
+    name: event-store
+  postgres:
+    name: postgres
+
+networks:
+  demo:
+    name: demo

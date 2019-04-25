@@ -1,0 +1,27 @@
+{
+    "name": "johnny/eventstore-demo",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Johnny van de Laar",
+            "email": "j.vandelaar@treehouse.nl"
+        }
+    ],
+    "minimum-stability": "beta",
+    "require": {
+        "eventsauce/eventsauce": "^0.4.0",
+        "league/container": "^3.2",
+        "php-http/curl-client": "^1.7",
+        "nyholm/psr7": "^1.0",
+        "prooph/event-store-client": "^1.0@beta",
+        "doctrine/dbal": "^2.9",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Application\\": "src/Application/",
+            "Domain\\": "src/Domain/",
+            "Infrastructure\\": "src/Infrastructure/"
+        }
+    }
+}
