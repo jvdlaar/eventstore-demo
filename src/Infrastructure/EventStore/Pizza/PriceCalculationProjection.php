@@ -6,7 +6,7 @@ namespace Infrastructure\EventStore\Pizza;
 
 use Infrastructure\EventStore\Projection;
 
-final class PizzaProjection implements Projection
+final class PriceCalculationProjection implements Projection
 {
     private const QUERY = <<<'QUERY'
         fromCategory('PizzaV1')

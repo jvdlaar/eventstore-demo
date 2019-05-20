@@ -8,7 +8,6 @@ use Domain\Pizza;
 use Domain\PizzaId;
 use Domain\PizzaRepository;
 use EventSauce\EventSourcing\AggregateRootRepository;
-use Infrastructure\EventStore\EventSourcedId;
 
 final class EventSourcedPizzaRepository implements PizzaRepository
 {
@@ -30,7 +29,7 @@ final class EventSourcedPizzaRepository implements PizzaRepository
     {
         /** @var Pizza $pizza */
         $pizza = $this->aggregateRootRepository->retrieve(
-            new EventSourcedId(
+            new EventSourcedPizzaId(
                 $id->toString()
             )
         );

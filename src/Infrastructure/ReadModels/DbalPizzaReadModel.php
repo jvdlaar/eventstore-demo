@@ -8,6 +8,7 @@ use Application\ReadModels\Pizza;
 use Application\ReadModels\PizzaNotFound;
 use Application\ReadModels\PizzaReadModel;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Types\Type;
 use Domain\DTO\PizzaName;
 use Domain\DTO\Price;
@@ -16,7 +17,7 @@ use Domain\DTO\Toppings;
 use Domain\PizzaId;
 use Generator;
 
-class DbalPizzaReadModel implements PizzaReadModel
+final class DbalPizzaReadModel implements PizzaReadModel
 {
     public const TABLE = 'pizzas';
 
@@ -53,7 +54,7 @@ class DbalPizzaReadModel implements PizzaReadModel
         ;
 
         if (!$row = $stmt->fetch()) {
-            throw PizzaNotFound::withId($pizzaId);
+            throw PizzaNotFound::with($pizzaId);
         }
 
         return $this->toPizzaProjection($row);
@@ -74,6 +75,58 @@ class DbalPizzaReadModel implements PizzaReadModel
         while (!$row = $stmt->fetch()) {
             yield $this->toPizzaProjection($row);
         }
+    }
+
+    /**
+     * @param PizzaId   $pizzaId
+     * @param PizzaName $name
+     *
+     * @throws DBALException
+     */
+    public function createPizza(PizzaId $pizzaId, PizzaName $name): void
+    {
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'pizza_id' => (string) $pizzaId,
+                'name' => (string) $name
+            ],
+            $this->getTypes()
+        );
+    }
+
+    /**
+     * @param PizzaId $pizzaId
+     * @param Price   $price
+     *
+     * @throws DBALException
+     */
+    public function increasePrice(PizzaId $pizzaId, Price $price): void
+    {
+        $this->connection->executeUpdate(
+            sprintf('UPDATE %s SET price = price + :price WHERE pizza_id = :pizza_id', self::TABLE),
+            [
+                'price' => $price->getCents(),
+                'pizza_id' => (string) $pizzaId,
+            ]
+        );
+    }
+
+    /**
+     * @param PizzaId $pizzaId
+     * @param Topping $topping
+     *
+     * @throws DBALException
+     */
+    public function addTopping(PizzaId $pizzaId, Topping $topping): void
+    {
+        $this->connection->executeUpdate(
+            sprintf("UPDATE %s SET topping = trim(',' from concat(topping, ',', :topping)) WHERE pizza_id = :pizza_id", self::TABLE),
+            [
+                'pizza_id' => (string) $pizzaId,
+                'topping' => $topping->getName(),
+            ]
+        );
     }
 
     /**

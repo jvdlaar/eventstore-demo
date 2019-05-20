@@ -6,6 +6,7 @@ namespace Application\ReadModels;
 
 use Domain\DTO\PizzaName;
 use Domain\DTO\Price;
+use Domain\DTO\Topping;
 use Domain\DTO\Toppings;
 use Domain\PizzaId;
 
@@ -80,6 +81,20 @@ class Pizza
     public function getToppings(): Toppings
     {
         return $this->toppings;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function toArray(): array
+    {
+        $toppings = [];
+
+        /** @var Topping $topping */
+        foreach ($this->toppings as $topping) {
+            $toppings[] = $topping->getName();
+        }
+        return $toppings;
     }
 
 }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Infrastructure\EventStore;
+namespace Infrastructure\EventStore\Pizza;
 
 use EventSauce\EventSourcing\AggregateRootId;
 
-final class EventSourcedId implements AggregateRootId
+final class EventSourcedPizzaId implements AggregateRootId
 {
     /**
      * @var string

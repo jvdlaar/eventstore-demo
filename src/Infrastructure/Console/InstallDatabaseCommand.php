@@ -29,16 +29,13 @@ final class InstallDatabaseCommand
     {
         $schema = new Schema();
 
-        $pizzaTable = $schema->createTable('pizza');
+        $pizzaTable = $schema->createTable('pizzas');
         $pizzaTable->addColumn('pizza_id', Type::GUID, []);
         $pizzaTable->addColumn('name', Type::STRING, ['length' => 255]);
-        $pizzaTable->addColumn('price', Type::SMALLINT, ['unsigned' => true]);
-        $pizzaTable->addColumn('toppings', Type::SIMPLE_ARRAY, []);
+        $pizzaTable->addColumn('price', Type::SMALLINT, ['unsigned' => true, 'notnull' => false]);
+        $pizzaTable->addColumn('toppings', Type::SIMPLE_ARRAY, ['notnull' => false]);
         $pizzaTable->setPrimaryKey(['pizza_id']);
 
-        $platform = $this->connection->getDatabasePlatform();
-        $queries = $schema->toSql($platform);
-
-        print_r($queries);
+        $this->connection->getSchemaManager()->dropAndCreateTable($pizzaTable);
     }
 }

@@ -6,13 +6,15 @@ namespace Infrastructure\Console;
 
 use Amp\Loop;
 use Generator;
-use Infrastructure\EventStore\Pizza\PriceCalculationProjection;
+use Infrastructure\EventStore\Pizza\PizzaReadModelProjection;
+use Infrastructure\ReadModels\EventSourcedPizzaProjector;
 use Prooph\EventStoreClient\EndPoint;
 use Prooph\EventStoreClient\EventStoreConnectionFactory;
 
-final class PriceCalculationConsumer
+class PizzaReadModelConsumer
 {
-    public const CALCULATE_PRICE = 'pizza:price';
+    public const READ_MODEL = 'pizza:read-model';
+
 
     /**
      * @var EndPoint
@@ -20,24 +22,24 @@ final class PriceCalculationConsumer
     private $endPoint;
 
     /**
-     * @var PriceCalculationProjection
+     * @var PizzaReadModelProjection
      */
     private $projection;
 
     /**
-     * @var PriceCalculationConsumeHandler
+     * @var EventSourcedPizzaProjector
      */
     private $handler;
 
     /**
      * @param EndPoint                       $endPoint
-     * @param PriceCalculationProjection     $projection
-     * @param PriceCalculationConsumeHandler $handler
+     * @param PizzaReadModelProjection       $projection
+     * @param EventSourcedPizzaProjector $handler
      */
     public function __construct(
         EndPoint $endPoint,
-        PriceCalculationProjection $projection,
-        PriceCalculationConsumeHandler $handler
+        PizzaReadModelProjection $projection,
+        EventSourcedPizzaProjector $handler
     ) {
         $this->endPoint = $endPoint;
         $this->projection = $projection;
@@ -50,7 +52,7 @@ final class PriceCalculationConsumer
             $connection = EventStoreConnectionFactory::createFromEndPoint(
                 $this->endPoint,
                 null,
-                uniqid('price-', true)
+                uniqid('readmodel-', true)
             );
             yield $connection->connectAsync();
 

@@ -8,6 +8,7 @@ use Application\Commands\CreatePizza;
 use Application\Commands\CreatePizzaHandler;
 use Application\Commands\IncreasePrice;
 use Application\Commands\IncreasePriceHandler;
+use Application\ReadModels\PizzaReadModel;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Domain\PizzaRepository;
@@ -24,6 +25,7 @@ use Infrastructure\Console\ConsoleHandlerFactory;
 use Infrastructure\Console\CreatePizzaCommand;
 use Infrastructure\Console\InstallDatabaseCommand;
 use Infrastructure\Console\InstallProjectionsCommand;
+use Infrastructure\Console\PizzaReadModelConsumer;
 use Infrastructure\Console\PriceCalculationConsumeHandler;
 use Infrastructure\Console\PriceCalculationConsumer;
 use Infrastructure\EventStore\EventsReader;
@@ -31,10 +33,12 @@ use Infrastructure\EventStore\EventStoreMessageRepository;
 use Infrastructure\EventStore\EventWriter;
 use Infrastructure\EventStore\Pizza\EventSourcedPizza;
 use Infrastructure\EventStore\Pizza\EventSourcedPizzaRepository;
-use Infrastructure\EventStore\Pizza\PizzaProjection;
+use Infrastructure\EventStore\Pizza\PizzaReadModelProjection;
+use Infrastructure\EventStore\Pizza\PriceCalculationProjection;
 use Infrastructure\EventStore\RequestFactory;
 use Infrastructure\EventStore\StripPrefixClassNameInflector;
 use Infrastructure\ReadModels\DbalPizzaReadModel;
+use Infrastructure\ReadModels\EventSourcedPizzaProjector;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Nyholm\Psr7\Factory\HttplugFactory;
@@ -75,6 +79,7 @@ $container->add(ConsoleHandlerFactory::class, function() use ($container) {
     $factory->registerHandler(CreatePizzaCommand::CREATE_PIZZA, CreatePizzaCommand::class);
     $factory->registerHandler(AddToppingCommand::ADD_TOPPING, AddToppingCommand::class);
     $factory->registerHandler(PriceCalculationConsumer::CALCULATE_PRICE, PriceCalculationConsumer::class);
+    $factory->registerHandler(PizzaReadModelConsumer::READ_MODEL, PizzaReadModelConsumer::class);
     return $factory;
 });
 
@@ -146,20 +151,23 @@ $container->add(InstallProjectionsCommand::class)
     ->addArgument(ProjectionsManager::class)
     ->addArgument(UserCredentials::class)
     ->addArgument('endpoint.tcp')
-    ->addArgument(PizzaProjection::class)
+    ->addArgument(PriceCalculationProjection::class)
+    ->addArgument(PizzaReadModelProjection::class)
+;
+
+$container->add(PizzaReadModelConsumer::class)
+    ->addArgument('endpoint.http')
+    ->addArgument(PizzaReadModelProjection::class)
+    ->addArgument(EventSourcedPizzaProjector::class)
+;
+
+$container->add(PizzaReadModel::class, DbalPizzaReadModel::class)
+    ->addArgument(Connection::class)
 ;
 
 /**
  * Configure database
  */
-$container->add(InstallProjectionsCommand::class)
-    ->addArgument(Connection::class)
-;
-
-$container->add(DbalPizzaReadModel::class)
-    ->addArgument(Connection::class)
-;
-
 $container->add(Connection::class, function() {
     return DriverManager::getConnection([
         'driver' => 'pdo_pgsql',
@@ -176,21 +184,13 @@ $container->add(Connection::class, function() {
  */
 $container->add(PriceCalculationConsumer::class)
     ->addArgument('endpoint.tcp')
-    ->addArgument(PizzaProjection::class)
+    ->addArgument(PriceCalculationProjection::class)
     ->addArgument(PriceCalculationConsumeHandler::class)
 ;
 
-$container->add(PriceCalculationConsumeHandler::class)
-    ->addArgument(CommandBus::class)
-;
-
-// MUST HAVE
-// @todo projection
-    // @todo create table
-    // @todo save rows
-    // @todo command for projection
-    // @todo show things
+// SHOULD HAVE
 // @todo assertions
+// @todo frontend
 
 // COULD HAVE
 // @todo causation id + correlation id
