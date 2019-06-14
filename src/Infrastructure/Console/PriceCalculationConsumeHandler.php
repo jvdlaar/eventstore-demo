@@ -40,7 +40,7 @@ final class PriceCalculationConsumeHandler implements EventAppearedOnPersistentS
             $data['pizza_id']
         );
 
-        $price = new Price(\strlen($data['name']));
+        $price = new Price(\strlen($data['name'] ?? $data['topping']));
 
         $this->commandBus->dispatch(new IncreasePrice($pizzaId, $price));
 

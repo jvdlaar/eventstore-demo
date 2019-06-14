@@ -156,7 +156,7 @@ $container->add(InstallProjectionsCommand::class)
 ;
 
 $container->add(PizzaReadModelConsumer::class)
-    ->addArgument('endpoint.http')
+    ->addArgument('endpoint.tcp')
     ->addArgument(PizzaReadModelProjection::class)
     ->addArgument(EventSourcedPizzaProjector::class)
 ;

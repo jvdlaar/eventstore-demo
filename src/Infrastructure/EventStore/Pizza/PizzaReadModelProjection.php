@@ -50,4 +50,12 @@ QUERY;
     {
         return self::GROUP_NAME;
     }
+
+    /**
+     * @return bool
+     */
+    public function isPersistentSubscription(): bool
+    {
+        return false;
+    }
 }

@@ -21,4 +21,9 @@ interface Projection
      * @return string
      */
     public function getStream(): string;
+
+    /**
+     * @return bool
+     */
+    public function isPersistentSubscription(): bool;
 }

@@ -8,8 +8,12 @@ use Amp\Loop;
 use Generator;
 use Infrastructure\EventStore\Pizza\PizzaReadModelProjection;
 use Infrastructure\ReadModels\EventSourcedPizzaProjector;
+use Prooph\EventStoreClient\ConnectionSettings;
 use Prooph\EventStoreClient\EndPoint;
 use Prooph\EventStoreClient\EventStoreConnectionFactory;
+use Prooph\EventStoreClient\Internal\EventStoreCatchUpSubscription as Subscription;
+use Prooph\EventStoreClient\UserCredentials;
+use Throwable;
 
 class PizzaReadModelConsumer
 {
@@ -32,8 +36,8 @@ class PizzaReadModelConsumer
     private $handler;
 
     /**
-     * @param EndPoint                       $endPoint
-     * @param PizzaReadModelProjection       $projection
+     * @param EndPoint                   $endPoint
+     * @param PizzaReadModelProjection   $projection
      * @param EventSourcedPizzaProjector $handler
      */
     public function __construct(
@@ -55,10 +59,10 @@ class PizzaReadModelConsumer
                 uniqid('readmodel-', true)
             );
             yield $connection->connectAsync();
-
-            yield $connection->connectToPersistentSubscriptionAsync(
+            $connection->subscribeToStreamFromAsync(
                 $this->projection->getStream(),
-                $this->projection->getGroupName(),
+                null,
+                null,
                 $this->handler
             );
         });

@@ -88,8 +88,8 @@ final class DbalPizzaReadModel implements PizzaReadModel
         $this->connection->insert(
             self::TABLE,
             [
-                'pizza_id' => (string) $pizzaId,
-                'name' => (string) $name
+                'pizza_id' => $pizzaId->toString(),
+                'name' => $name->getName(),
             ],
             $this->getTypes()
         );
@@ -104,11 +104,12 @@ final class DbalPizzaReadModel implements PizzaReadModel
     public function increasePrice(PizzaId $pizzaId, Price $price): void
     {
         $this->connection->executeUpdate(
-            sprintf('UPDATE %s SET price = price + :price WHERE pizza_id = :pizza_id', self::TABLE),
+            sprintf('UPDATE %s SET price = COALESCE(price, 0) + CAST(:price as integer) WHERE pizza_id = :pizza_id', self::TABLE),
             [
                 'price' => $price->getCents(),
-                'pizza_id' => (string) $pizzaId,
-            ]
+                'pizza_id' => $pizzaId->toString(),
+            ],
+            $this->getTypes()
         );
     }
 
@@ -121,11 +122,12 @@ final class DbalPizzaReadModel implements PizzaReadModel
     public function addTopping(PizzaId $pizzaId, Topping $topping): void
     {
         $this->connection->executeUpdate(
-            sprintf("UPDATE %s SET topping = trim(',' from concat(topping, ',', :topping)) WHERE pizza_id = :pizza_id", self::TABLE),
+            sprintf("UPDATE %s SET toppings = trim(',' from concat(toppings, ',', CAST(:topping as varchar))) WHERE pizza_id = :pizza_id", self::TABLE),
             [
-                'pizza_id' => (string) $pizzaId,
                 'topping' => $topping->getName(),
-            ]
+                'pizza_id' => $pizzaId->toString(),
+            ],
+            $this->getTypes()
         );
     }
 

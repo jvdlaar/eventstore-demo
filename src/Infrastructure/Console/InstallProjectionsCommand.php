@@ -82,19 +82,21 @@ final class InstallProjectionsCommand
                     echo "Projection already exists\n";
                 }
 
-                try {
-                    yield $connection->createPersistentSubscriptionAsync(
-                        $projection->getStream(),
-                        $projection->getGroupName(),
-                        PersistentSubscriptionSettings::create()
-                            ->startFromBeginning()
-                            ->resolveLinkTos()
-                            ->build(),
-                        $this->credentials
-                    );
-                    echo "Persistent subscription {$projection->getStream()} created\n";
-                } catch (InvalidOperationException $e) {
-                    echo "Persistent subscription {$projection->getStream()} already exists\n";
+                if ($projection->isPersistentSubscription()) {
+                    try {
+                        yield $connection->createPersistentSubscriptionAsync(
+                            $projection->getStream(),
+                            $projection->getGroupName(),
+                            PersistentSubscriptionSettings::create()
+                                ->startFromBeginning()
+                                ->resolveLinkTos()
+                                ->build(),
+                            $this->credentials
+                        );
+                        echo "Persistent subscription {$projection->getStream()} created\n";
+                    } catch (InvalidOperationException $e) {
+                        echo "Persistent subscription {$projection->getStream()} already exists\n";
+                    }
                 }
             }
             Loop::stop();

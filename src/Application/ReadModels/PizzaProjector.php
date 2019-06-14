@@ -8,6 +8,7 @@ use Domain\Events\Event;
 use Domain\Events\PizzaCreated;
 use Domain\Events\PriceIncreased;
 use Domain\Events\ToppingAdded;
+use function get_class;
 use RuntimeException;
 
 final class PizzaProjector
@@ -30,8 +31,8 @@ final class PizzaProjector
      */
     public function __invoke(Event $event): void
     {
-        switch (\get_class($event)) {
-            case PizzaCreated::class:
+        switch (true) {
+            case is_a($event, PizzaCreated::class):
                 /** @var PizzaCreated $event */
                 $this->readModel->createPizza(
                     $event->getPizzaId(),
@@ -39,7 +40,7 @@ final class PizzaProjector
                 );
                 break;
 
-            case ToppingAdded::class:
+            case is_a($event, ToppingAdded::class):
                 /** @var ToppingAdded $event */
                 $this->readModel->addTopping(
                     $event->getPizzaId(),
@@ -47,7 +48,7 @@ final class PizzaProjector
                 );
                 break;
 
-            case PriceIncreased::class:
+            case is_a($event, PriceIncreased::class):
                 /** @var PriceIncreased $event */
                 $this->readModel->increasePrice(
                     $event->getPizzaId(),

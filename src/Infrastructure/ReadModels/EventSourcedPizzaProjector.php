@@ -8,11 +8,11 @@ use Amp\Promise;
 use Amp\Success;
 use Application\ReadModels\PizzaProjector;
 use EventSauce\EventSourcing\Serialization\MessageSerializer;
-use Prooph\EventStoreClient\EventAppearedOnPersistentSubscription;
-use Prooph\EventStoreClient\Internal\EventStorePersistentSubscription;
+use Prooph\EventStoreClient\EventAppearedOnCatchupSubscription;
+use Prooph\EventStoreClient\Internal\EventStoreCatchUpSubscription;
 use Prooph\EventStoreClient\ResolvedEvent;
 
-final class EventSourcedPizzaProjector implements EventAppearedOnPersistentSubscription
+final class EventSourcedPizzaProjector implements EventAppearedOnCatchupSubscription
 {
     /**
      * @var PizzaProjector
@@ -34,7 +34,7 @@ final class EventSourcedPizzaProjector implements EventAppearedOnPersistentSubsc
         $this->serializer = $serializer;
     }
 
-    public function __invoke(EventStorePersistentSubscription $subscription, ResolvedEvent $resolvedEvent, ?int $retryCount = null): Promise
+    public function __invoke(EventStoreCatchUpSubscription $subscription, ResolvedEvent $resolvedEvent): Promise
     {
         $payload = [
             'headers' => json_decode($resolvedEvent->event()->metadata(), true),
@@ -42,7 +42,7 @@ final class EventSourcedPizzaProjector implements EventAppearedOnPersistentSubsc
         ];
 
         foreach ($this->serializer->unserializePayload($payload) as $event) {
-            ($this->projector)($event);
+            ($this->projector)($event->event());
         }
 
         return new Success();

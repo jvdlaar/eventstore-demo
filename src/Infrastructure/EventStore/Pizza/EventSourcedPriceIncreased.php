@@ -20,7 +20,7 @@ final class EventSourcedPriceIncreased extends PriceIncreased implements Seriali
     {
         return new static(
             $priceSet->pizzaId,
-            $priceSet->price,
+            $priceSet->price
         );
     }
 
